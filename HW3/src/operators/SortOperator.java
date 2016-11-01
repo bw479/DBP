@@ -34,7 +34,7 @@ public abstract class SortOperator extends UnaryOperator{
 	
 	public abstract void reset();
 	
-	public abstract void reset(long index);
+	public abstract void reset(int index);
 	
 	
 	/**

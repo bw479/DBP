@@ -110,8 +110,33 @@ public class PhysicalPlanBuilder {
 			List<String> rightOrder = new ArrayList<String>();
 			Expression exp = genSortOrder(leftChild, rightChild, opt.exp,
 					leftOrder, rightOrder);
-			cur = new SortMergeJoinOperator(leftChild, rightChild, 
-					exp, leftOrder, rightOrder);
+			
+			if (leftOrder.size() != rightOrder.size()) {
+				throw new IllegalArgumentException();
+			}
+
+			if (leftOrder.size() == 0) {
+				cur = new BlockJoinOperator(leftChild, rightChild,
+						opt.exp, Catalog.joinBufNum);
+			}
+			else {
+				SortOperator leftSortChild = null;
+				SortOperator rightSortChild = null;
+				if (Catalog.sortMethod.equals("INMEM")) {
+					leftSortChild = 
+							new InMemSortOperator(leftChild, leftOrder);
+					rightSortChild = 
+							new InMemSortOperator(rightChild, rightOrder);
+				}
+				else {
+					leftSortChild = new ExternalSortOperator (
+							leftChild, leftOrder, Catalog.sortBufNum);
+					rightSortChild = new ExternalSortOperator (
+							rightChild, rightOrder, Catalog.sortBufNum);
+				}
+				cur = new SortMergeJoinOperator(leftSortChild, rightSortChild, 
+						exp, leftOrder, rightOrder);
+			}
 		}
 	}
 
@@ -140,7 +165,7 @@ public class PhysicalPlanBuilder {
 			}
 			expList.add(exp);
 		}
-		
+
 		List<Expression> doubleCondList = new ArrayList<Expression>();
 		List<Expression> singleCondList = new ArrayList<Expression>();
 		for (Expression expression : expList) {
@@ -149,18 +174,18 @@ public class PhysicalPlanBuilder {
 			EqualsTo equal = (EqualsTo) expression;
 			String leftCol = equal.getLeftExpression().toString();
 			String rightCol = equal.getRightExpression().toString();
-			
+
 			boolean lContainLeftCol = leftChild.getSchema().contains(leftCol);
 			boolean lContainRightCol = leftChild.getSchema().contains(rightCol);
 			boolean rContainLeftCol = leftChild.getSchema().contains(leftCol);
 			boolean rContainRightCol = rightChild.getSchema().contains(rightCol);
-			
+
 			if (!(lContainLeftCol && rContainRightCol  ||  
 					lContainRightCol && rContainLeftCol)) {
 				singleCondList.add(expression);
 				continue;
 			}
-			
+
 			doubleCondList.add(expression);
 			if (lContainLeftCol && rContainRightCol) {
 				leftOrder.add(leftCol);
@@ -172,16 +197,17 @@ public class PhysicalPlanBuilder {
 			}
 		}
 		doubleCondList.addAll(singleCondList);
-		
+
 		return genExpression(doubleCondList);
 	}
-	
+
 	/**
 	 * Generate a new expression or AndExpression by the given expression list
 	 * @param list the expression list
 	 * @return the new expression or AndExpression
 	 */
 	public Expression genExpression(List<Expression> list) {
+		if (list == null  ||  list.size() == 0) return null;
 		Expression exp = list.get(0);
 		if (list.size() == 1) return exp;
 		for (int i = 1; i < list.size(); i++) {

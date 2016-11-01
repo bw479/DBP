@@ -32,6 +32,7 @@ public class BlockJoinOperator extends JoinOperator{
 			int bufNum) {
 		super(left, right, exp);
 		int tupleSize = 4 * left.schema.size();
+		if (bufNum == 0) bufNum = 2;
 		outerTupleNum = bufNum * (pageSize / tupleSize);
 		outerBuf = new ArrayList<Tuple>();
 		setNext();

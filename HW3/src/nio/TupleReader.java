@@ -21,6 +21,13 @@ public interface TupleReader {
 	public void reset() throws IOException;
 	
 	/**
+	 * reset back to a specific tuple
+	 * @param index the index of the tuple
+	 * @throws IOException
+	 */
+	public void reset(int index) throws IOException;
+	
+	/**
 	 * close the file
 	 * @throws IOException
 	 */

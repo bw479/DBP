@@ -5,26 +5,26 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 
-import nio.BinaryTupleReader;
-import nio.BinaryTupleWriter;
-import nio.TupleReader;
+import nio.*;
 import utils.Tuple;
 
 public class ExternalSortOperator extends SortOperator{
+	private static int fileGlobalCnt = 0;
 	private TupleReader tr = null;
 	private int tuplePerPage;
 	private static final int bufferSize = 4096;
 	private List<TupleReader> buffer;
 	private int fileNum = 0;
-	private int pageNum;
+	private int pageNum = 3;
 	
 	private String fileName (int fileNum, int fileCount) {
-		return "temporaryFile" + fileNum + "_" +fileCount;
+		return "temporaryFile" +fileGlobalCnt + "_" + fileNum + "_" + fileCount;
 	}
 	
 	public ExternalSortOperator(Operator child, List<String> orderBy, int pageNum) {
 		super(child, orderBy);
-		this.pageNum = pageNum;
+		fileGlobalCnt++;
+		if (pageNum > 3) this.pageNum = pageNum;
 		buffer = new ArrayList<TupleReader>(); 
 		int attributeNum = child.getSchema().size();
 		tuplePerPage = bufferSize/(attributeNum*4);
@@ -141,11 +141,11 @@ public class ExternalSortOperator extends SortOperator{
 	}
 	
 	@Override
-	public void reset(long index) {
-//		try {
-//			tr.reset();
-//		} catch (IOException e) {
-//			System.out.println("Nothing to reset");
-//		}
+	public void reset(int index) {
+		try {
+			tr.reset(index);
+		} catch (IOException e) {
+			System.out.println("Nothing to reset");
+		}
 	}
 }

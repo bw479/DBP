@@ -35,6 +35,8 @@ public class SortMergeJoinOperator extends JoinOperator{
 		super(left, right, exp);
 		this.leftOrder = leftOrder;
 		this.rightOrder = rightOrder;
+		this.leftTuple = left.getNextTuple();
+		this.rightTuple = right.getNextTuple();
 		this.partitionIndex = 0;
 	}
 
@@ -46,15 +48,18 @@ public class SortMergeJoinOperator extends JoinOperator{
 	@Override
 	public Tuple getNextTuple() {
 		while (leftTuple != null  &&  rightTuple != null) {
-			
-			while (compare(leftTuple, rightTuple) < 0)
+			int compareResult = compare(leftTuple, rightTuple);
+			if (compareResult < 0) {
 				leftTuple = left.getNextTuple();
-			
-			while (compare(leftTuple, rightTuple) > 0) {
-				rightTuple = right.getNextTuple();
-				partitionIndex++;
+				continue;
 			}
 			
+			if (compareResult > 0) {
+				rightTuple = right.getNextTuple();
+				partitionIndex++;
+				continue;
+			}
+
 			jv = new JoinVisitor(leftTuple, rightTuple, 
 					left.getSchema(), right.getSchema());
 			exp.accept(jv);
@@ -64,7 +69,7 @@ public class SortMergeJoinOperator extends JoinOperator{
 			
 			rightTuple = right.getNextTuple();
 			if (rightTuple == null  ||  compare(leftTuple, rightTuple) != 0) {
-				((SortOperator)right).reset(partitionIndex++);
+				((SortOperator)right).reset(partitionIndex);
 				rightTuple = right.getNextTuple();
 				leftTuple = left.getNextTuple();
 			}
@@ -82,14 +87,13 @@ public class SortMergeJoinOperator extends JoinOperator{
 	 * than the rightTuple, -1 if the left Tuple is smaller than the rightTuple
 	 */
 	public int compare(Tuple leftTuple, Tuple rightTuple) {
+		
 		for (int i = 0; i < leftOrder.size(); i++) {
 			String orderEle1 = leftOrder.get(i);
 			String orderEle2 = rightOrder.get(i);
-			String[] temp1 = orderEle1.split("\\.");
-			String[] temp2 = orderEle2.split("\\.");
-			int leftEle = leftTuple.getColumn().get(left.schema.indexOf(temp1[1]));
+			int leftEle = leftTuple.getColumn().get(left.schema.indexOf(orderEle1));
 			int rightEle = 
-					rightTuple.getColumn().get(right.schema.indexOf(temp2[1]));
+					rightTuple.getColumn().get(right.schema.indexOf(orderEle2));
 			int r = Integer.compare(leftEle, rightEle);
 			if (r != 0) return r;
 		}

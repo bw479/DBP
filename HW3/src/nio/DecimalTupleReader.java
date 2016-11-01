@@ -17,7 +17,7 @@ public class DecimalTupleReader implements TupleReader{
 	private File file;
 	private FileReader fr;
 	private BufferedReader br;
-	
+
 	/**
 	 * create a reader for tuple files with decimal numbers
 	 * @param tablePath the file path
@@ -40,7 +40,7 @@ public class DecimalTupleReader implements TupleReader{
 			int len = elems.length;
 			List<Integer> tuple = new ArrayList<Integer>();
 			for (int i = 0; i < len; i++) {
-				tuple.add( Integer.valueOf(elems[i]) );
+				tuple.add(Integer.valueOf(elems[i]) );
 			}
 			return new Tuple(tuple);
 		} catch (IOException e) {
@@ -62,7 +62,24 @@ public class DecimalTupleReader implements TupleReader{
 			}
 		}
 		br = new BufferedReader(new FileReader(file));
-		
+	}
+	/**
+	 * reset the table to specific tuple
+	 * @param index the index of the tuple
+	 */
+	@Override
+	public void reset(int index) throws IOException {
+		if (br != null) {
+			try {
+				br.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		br = new BufferedReader(new FileReader(file));
+		for(int i = 0; i < index; i++){
+			br.readLine();
+		}
 	}
 	/**
 	 * close the file

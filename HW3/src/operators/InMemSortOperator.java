@@ -40,12 +40,8 @@ public class InMemSortOperator extends SortOperator{
 	}
 	
 	@Override
-	public void reset(long index) {
-//		try {
-//			tr.reset();
-//		} catch (IOException e) {
-//			System.out.println("Nothing to reset");
-//		}
+	public void reset(int index) {
+		this.index = index;
 	}
 
 }

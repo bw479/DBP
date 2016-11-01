@@ -68,7 +68,6 @@ public class BinaryTupleReader implements TupleReader{
 		
 		return null;
 	}
-	
 	/**
 	 * Get a new page from the file
 	 * @throws IOException
@@ -106,6 +105,34 @@ public class BinaryTupleReader implements TupleReader{
 		buffer = ByteBuffer.allocate(bufferSize);
 		input = new FileInputStream(file);
 		channel = input.getChannel();
+		
+		
+	}
+	
+	public void reset(int index) {
+		try {
+			int tuplePerPage = (bufferSize-2*intSize)/(attributeNum*intSize);
+			int pages = index/tuplePerPage;
+			int overflow = index%tuplePerPage;
+			//int bytePerPage = (2 + attributeNum * tuplePerPage) * intSize;
+			int overflowByte = overflow * attributeNum * intSize;
+			long byteIndex = bufferSize * pages;
+			channel.close();
+			this.pageNeeded = true;
+			this.endOfFile = false;
+			input = new FileInputStream(file);
+			channel = input.getChannel();
+			channel.position(byteIndex);
+			//reset();
+			
+			clearBuffer();
+			getPage();
+			buffer.position(overflowByte+2*intSize);
+			
+		} catch (IOException e) {
+			System.out.println("IO not found");
+		}
+		
 		
 		
 	}

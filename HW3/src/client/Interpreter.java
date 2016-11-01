@@ -56,12 +56,12 @@ public class Interpreter {
 					TupleWriter tw;
 					if (isBinary) {
 						filePath = Catalog.outputPath 
-								+ File.separator + "my_query" + count;
+								+ File.separator + "query" + count;
 						tw = new BinaryTupleWriter(filePath);
 					}
 					else {
 						filePath = Catalog.outputPath + File.separator 
-								+ "my_query" + count + "_humanreadable";
+								+ "query" + count + "_humanreadable";
 						tw = new DecimalTupleWriter(filePath);
 					}
 					TreeBuilder tree = new TreeBuilder(statement);

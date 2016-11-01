@@ -14,6 +14,7 @@ public class SortTupleTest {
 
 	@Test
 	public void test() throws IOException{
+		SortTuples.sortTuple("samples/output/Dec/SortMergeJoinDecTest8");
 		SortTuples.sortTuple("samples/expected/query8_humanreadable");
 	}
 
