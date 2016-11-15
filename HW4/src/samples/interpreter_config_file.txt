@@ -1,0 +1,5 @@
+/Users/bingyuwang/Documents/2016FA/Database/Project/P4/HW4/src/samples/input
+/Users/bingyuwang/Documents/2016FA/Database/Project/P4/HW4/src/samples/output
+/Users/bingyuwang/Documents/2016FA/Database/Project/P4/HW4/src/samples/tempdir
+1
+0
